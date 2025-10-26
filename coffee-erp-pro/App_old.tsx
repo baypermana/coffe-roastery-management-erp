@@ -1,7 +1,7 @@
-
-import React, { useState, useEffect } from 'react';
-import { View, User, UserRole } from './types';
-import { useMockData } from './hooks/useMockData';
+import React, { useState } from 'react';
+import { View } from './types';
+import { useAuth } from './contexts/AuthContext';
+import { useSupabaseData } from './services/supabaseService';
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import PurchaseOrders from './components/PurchaseOrders';
@@ -21,6 +21,7 @@ import Tasks from './components/Tasks';
 import { useTranslation } from './hooks/useTranslation';
 import RegistrationPage from './components/RegistrationPage';
 import ProfileModal from './components/ProfileModal';
+import Analytics from './components/Analytics';
 
 const LanguageSwitcher = () => {
     const { language, setLanguage } = useTranslation();
@@ -35,9 +36,12 @@ const LanguageSwitcher = () => {
     );
 };
 
-const UserMenu = ({ user, onLogout, onProfileClick }: { user: User; onLogout: () => void; onProfileClick: () => void; }) => {
+const UserMenu = ({ onLogout, onProfileClick }: { onLogout: () => void; onProfileClick: () => void; }) => {
     const [isOpen, setIsOpen] = useState(false);
     const { t } = useTranslation();
+    const { user } = useAuth();
+
+    if (!user) return null;
 
     return (
         <div className="relative">
@@ -58,50 +62,48 @@ const UserMenu = ({ user, onLogout, onProfileClick }: { user: User; onLogout: ()
 const App: React.FC = () => {
     const [currentView, setCurrentView] = useState<View>('Dashboard');
     const [isSidebarOpen, setSidebarOpen] = useState(false);
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [authView, setAuthView] = useState<'login' | 'register'>('login');
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-    const { dataService, isLoading: isDbLoading } = useMockData();
+    const { user, loading, signIn, signUp, signOut, updateProfile } = useAuth();
+    const { dataService } = useSupabaseData();
     const { t } = useTranslation();
 
-    const handleLogin = async (username: string, password: string): Promise<boolean> => {
-        const user = await dataService.users.getByUsername(username);
-        if (user && user.password === password) {
-            setCurrentUser(user);
+    const handleLogin = async (email: string, password: string): Promise<boolean> => {
+        const result = await signIn(email, password);
+        if (result.success) {
             setCurrentView('Dashboard');
             return true;
         }
         return false;
     };
 
-    const handleRegister = async (username: string, password: string): Promise<{success: boolean, message: string}> => {
-        const existingUser = await dataService.users.getByUsername(username);
-        if (existingUser) {
-            return { success: false, message: t('register.error_userExists') };
+    const handleRegister = async (email: string, password: string, username: string): Promise<{success: boolean, message: string}> => {
+        const result = await signUp(email, password, username);
+        if (result.success) {
+            return { success: true, message: t('register.success') };
         }
-        await dataService.users.add({ username, password, role: UserRole.USER });
-        return { success: true, message: t('register.success') };
+        return { success: false, message: result.error || t('register.error_userExists') };
     };
-    
-    const handleUpdateProfile = async (userId: string, data: { password?: string }) => {
-        await dataService.users.update(userId, data);
+
+    const handleUpdateProfile = async (_userId: string, data: { password?: string }) => {
+        await updateProfile(data);
         setIsProfileModalOpen(false);
     };
 
-    const handleLogout = () => {
-        setCurrentUser(null);
+    const handleLogout = async () => {
+        await signOut();
     };
 
-    if (isDbLoading) {
+    if (loading) {
         return (
             <div className="flex h-screen w-full items-center justify-center bg-brand-brown-50">
                 <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-brand-brown-700"></div>
-                <p className="ml-4 text-lg font-semibold text-brand-brown-800">Initializing Database...</p>
+                <p className="ml-4 text-lg font-semibold text-brand-brown-800">Loading...</p>
             </div>
         );
     }
 
-    if (!currentUser) {
+    if (!user) {
         if (authView === 'login') {
             return <LoginPage onLogin={handleLogin} onSwitchToRegister={() => setAuthView('register')} />;
         }
@@ -133,11 +135,13 @@ const App: React.FC = () => {
             case 'Kalkulator HPP':
                 return <HPPCalculator data={dataService} />;
             case 'Financial Management':
-                return <FinancialManagement data={dataService} currentUser={currentUser} />;
+                return <FinancialManagement data={dataService} currentUser={user} />;
             case 'User Management':
-                return <UserManagement data={dataService} currentUser={currentUser} />;
+                return <UserManagement data={dataService} currentUser={user} />;
             case 'Tasks':
-                return <Tasks data={dataService} currentUser={currentUser} />;
+                return <Tasks data={dataService} currentUser={user} />;
+            case 'Analytics':
+                return <Analytics data={dataService} />;
             default:
                 return (
                     <div className="p-8 bg-white rounded-lg shadow-md">
@@ -148,7 +152,7 @@ const App: React.FC = () => {
                 );
         }
     };
-    
+
     const MenuIcon = () => (
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -159,7 +163,7 @@ const App: React.FC = () => {
 
     return (
         <div className="flex h-screen bg-brand-brown-50 font-sans">
-            <Sidebar currentView={currentView} setCurrentView={setCurrentView} isOpen={isSidebarOpen} setOpen={setSidebarOpen} currentUser={currentUser} />
+            <Sidebar currentView={currentView} setCurrentView={setCurrentView} isOpen={isSidebarOpen} setOpen={setSidebarOpen} currentUser={user} />
             <main className="flex-1 flex flex-col overflow-hidden">
                 <header className="flex items-center justify-between p-4 bg-white border-b border-brand-brown-200 lg:justify-end">
                      <button
@@ -172,17 +176,17 @@ const App: React.FC = () => {
                     <h1 className="text-xl font-bold text-brand-brown-900 lg:hidden">{t(`sidebar.${currentView}` as any, {})}</h1>
                     <div className="flex items-center space-x-4">
                         <LanguageSwitcher />
-                        <UserMenu user={currentUser} onLogout={handleLogout} onProfileClick={() => setIsProfileModalOpen(true)} />
+                        <UserMenu onLogout={handleLogout} onProfileClick={() => setIsProfileModalOpen(true)} />
                     </div>
                 </header>
                 <div className="flex-1 p-4 md:p-6 lg:p-8 overflow-y-auto">
                     {renderView()}
                 </div>
             </main>
-            {isProfileModalOpen && (
-                <ProfileModal 
-                    user={currentUser} 
-                    onClose={() => setIsProfileModalOpen(false)} 
+            {isProfileModalOpen && user && (
+                <ProfileModal
+                    user={user}
+                    onClose={() => setIsProfileModalOpen(false)}
                     onSave={handleUpdateProfile}
                 />
             )}

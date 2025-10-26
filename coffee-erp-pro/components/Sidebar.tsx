@@ -41,6 +41,7 @@ const HPPCalculatorIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="2
 const FinancialIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8c0-2.2-1.8-4-4-4H7c-2.2 0-4 1.8-4 4v8c0 2.2 1.8 4 4 4h10c2.2 0 4-1.8 4-4Z" /><path d="M7 16h10" /><path d="M7 12h10" /><path d="M12 12v8" /></svg>;
 const UserManagementIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
 const TasksIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>;
+const AnalyticsIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>;
 
 
 const getViewIcon = (view: View) => {
@@ -59,6 +60,7 @@ const getViewIcon = (view: View) => {
         case 'Financial Management': return <FinancialIcon />;
         case 'User Management': return <UserManagementIcon />;
         case 'Tasks': return <TasksIcon />;
+        case 'Analytics': return <AnalyticsIcon />;
         default: return <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>;
     }
 }
@@ -94,17 +96,17 @@ const Sidebar: React.FC<SidebarProps> = ({ currentView, setCurrentView, isOpen, 
         if (!currentUser) return [];
 
         const allViews: View[] = [
-            'Dashboard', 'Purchase Orders', 'Grading Form', 'Suppliers', 'Roasting Form', 
+            'Dashboard', 'Analytics', 'Purchase Orders', 'Grading Form', 'Suppliers', 'Roasting Form',
             'External Roasting', 'Cupping Form', 'Blending Form', 'Warehouse', 'Sales', 'Tasks',
             'Kalkulator HPP', 'Financial Management', 'User Management'
         ];
-        
+
         const rolePermissions: Record<UserRole, View[]> = {
             [UserRole.ADMIN]: allViews,
-            [UserRole.ROASTER]: ['Dashboard', 'Roasting Form', 'External Roasting', 'Blending Form', 'Warehouse', 'Cupping Form', 'Tasks'],
-            [UserRole.QC]: ['Dashboard', 'Grading Form', 'Cupping Form', 'Warehouse', 'Tasks'],
-            [UserRole.SALES]: ['Dashboard', 'Sales', 'Warehouse', 'Tasks'],
-            [UserRole.USER]: ['Dashboard', 'Warehouse', 'Tasks']
+            [UserRole.ROASTER]: ['Dashboard', 'Analytics', 'Roasting Form', 'External Roasting', 'Blending Form', 'Warehouse', 'Cupping Form', 'Tasks'],
+            [UserRole.QC]: ['Dashboard', 'Analytics', 'Grading Form', 'Cupping Form', 'Warehouse', 'Tasks'],
+            [UserRole.SALES]: ['Dashboard', 'Analytics', 'Sales', 'Warehouse', 'Tasks'],
+            [UserRole.USER]: ['Dashboard', 'Analytics', 'Warehouse', 'Tasks']
         };
         
         return rolePermissions[currentUser.role] || [];

@@ -272,4 +272,4 @@ export interface Todo {
 }
 
 
-export type View = 'Dashboard' | 'Purchase Orders' | 'Grading Form' | 'Suppliers' | 'Roasting Form' | 'External Roasting' | 'Cupping Form' | 'Blending Form' | 'Warehouse' | 'Sales' | 'Kalkulator HPP' | 'Financial Management' | 'User Management' | 'Tasks';
+export type View = 'Dashboard' | 'Purchase Orders' | 'Grading Form' | 'Suppliers' | 'Roasting Form' | 'External Roasting' | 'Cupping Form' | 'Blending Form' | 'Warehouse' | 'Sales' | 'Kalkulator HPP' | 'Financial Management' | 'User Management' | 'Tasks' | 'Analytics';

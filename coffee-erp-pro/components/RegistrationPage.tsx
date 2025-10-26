@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useTranslation } from '../hooks/useTranslation';
 
 interface RegistrationPageProps {
-    onRegister: (username: string, password: string) => Promise<{success: boolean, message: string}>;
+    onRegister: (email: string, password: string, username: string) => Promise<{success: boolean, message: string}>;
     onSwitchToLogin: () => void;
 }
 
@@ -14,6 +14,7 @@ const CoffeeIcon = () => (
 );
 
 const RegistrationPage: React.FC<RegistrationPageProps> = ({ onRegister, onSwitchToLogin }) => {
+    const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -31,9 +32,10 @@ const RegistrationPage: React.FC<RegistrationPageProps> = ({ onRegister, onSwitc
             return;
         }
         setIsLoading(true);
-        const result = await onRegister(username, password);
+        const result = await onRegister(email, password, username);
         if (result.success) {
             setSuccess(result.message);
+            setEmail('');
             setUsername('');
             setPassword('');
             setConfirmPassword('');
@@ -56,7 +58,10 @@ const RegistrationPage: React.FC<RegistrationPageProps> = ({ onRegister, onSwitc
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                      <div className="rounded-md shadow-sm -space-y-px">
                         <div>
-                            <input id="username" name="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} required className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-brand-brown-500 focus:border-brand-brown-500 focus:z-10 sm:text-sm" placeholder={t('register.usernamePlaceholder')} />
+                            <input id="email" name="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-brand-brown-500 focus:border-brand-brown-500 focus:z-10 sm:text-sm" placeholder="Email" />
+                        </div>
+                        <div>
+                            <input id="username" name="username" type="text" value={username} onChange={(e) => setUsername(e.target.value)} required className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-brand-brown-500 focus:border-brand-brown-500 focus:z-10 sm:text-sm" placeholder={t('register.usernamePlaceholder')} />
                         </div>
                         <div>
                             <input id="password" name="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-brand-brown-500 focus:border-brand-brown-500 focus:z-10 sm:text-sm" placeholder={t('register.passwordPlaceholder')} />

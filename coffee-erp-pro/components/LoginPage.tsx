@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useTranslation } from '../hooks/useTranslation';
 
 interface LoginPageProps {
-    onLogin: (username: string, password: string) => Promise<boolean>;
+    onLogin: (email: string, password: string) => Promise<boolean>;
     onSwitchToRegister: () => void;
 }
 
@@ -15,7 +15,7 @@ const CoffeeIcon = () => (
 );
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegister }) => {
-    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -25,7 +25,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegister }) =>
         e.preventDefault();
         setError('');
         setIsLoading(true);
-        const success = await onLogin(username, password);
+        const success = await onLogin(email, password);
         if (!success) {
             setError(t('login.error'));
         }
@@ -46,14 +46,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onSwitchToRegister }) =>
                     <div className="rounded-md shadow-sm -space-y-px">
                         <div>
                             <input
-                                id="username"
-                                name="username"
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
+                                id="email"
+                                name="email"
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 required
                                 className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-brand-brown-500 focus:border-brand-brown-500 focus:z-10 sm:text-sm"
-                                placeholder={t('login.usernamePlaceholder')}
+                                placeholder="Email"
                             />
                         </div>
                         <div>
