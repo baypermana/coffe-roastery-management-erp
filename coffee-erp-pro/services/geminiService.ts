@@ -2,15 +2,15 @@
 import { GoogleGenAI } from "@google/genai";
 import { StockItem, SalesRecord, PurchaseOrder } from '../types';
 
-// IMPORTANT: This key is injected by the environment and is not managed in the code.
-const API_KEY = process.env.API_KEY;
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-if (!API_KEY) {
-  console.warn("API_KEY environment variable not set. Gemini AI features will be disabled.");
+let ai: GoogleGenAI | null = null;
+
+if (API_KEY) {
+  ai = new GoogleGenAI({ apiKey: API_KEY });
+} else {
+  console.warn("VITE_GEMINI_API_KEY not set. AI analytics features will be disabled.");
 }
-
-// FIX: Initialize GoogleGenAI with a named apiKey parameter.
-const ai = new GoogleGenAI({ apiKey: API_KEY! });
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -21,8 +21,8 @@ export const getBusinessAnalytics = async (
   sales: SalesRecord[],
   pos: PurchaseOrder[]
 ): Promise<string> => {
-  if (!API_KEY) {
-    return Promise.resolve("AI Analytics is disabled. Please configure your API_KEY.");
+  if (!ai || !API_KEY) {
+    return Promise.resolve("AI Analytics is disabled. Please configure VITE_GEMINI_API_KEY in your environment variables to enable AI-powered insights.");
   }
 
   const prompt = `
